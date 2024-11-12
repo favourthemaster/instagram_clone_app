@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:instagram_clone_app/widgets/buttons/action_button_widgets.dart';
 import 'package:instagram_clone_app/widgets/expandable_text.dart';
 import 'package:instagram_clone_app/widgets/page_indicator.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import './profile_picture.dart';
 import 'buttons/like_button.dart';
@@ -204,7 +203,7 @@ class CarouselPostWidget extends StatelessWidget {
             AspectRatio(
               aspectRatio: 1,
               child: PageView(
-                physics: ClampingScrollPhysics(),
+                physics: BouncingScrollPhysics(),
                 pageSnapping: true,
                 scrollDirection: Axis.horizontal,
                 controller: postsController,
@@ -244,33 +243,6 @@ class CarouselPostWidget extends StatelessWidget {
           child: PageIndicator(
             controller: postsController,
             pages: 8,
-          ),
-        ),
-        Center(
-          //TODO: Make urown implementation of this
-          child: SmoothPageIndicator(
-            onDotClicked: (index) {
-              postsController.animateToPage(index,
-                  duration: const Duration(milliseconds: 100),
-                  curve: Curves.linear);
-            },
-            effect: CustomizableEffect(
-              spacing: 5,
-              dotDecoration: DotDecoration(
-                width: 5,
-                height: 5,
-                borderRadius: BorderRadius.circular(5),
-                color: Color(0xFFD9D9D9),
-              ),
-              activeDotDecoration: DotDecoration(
-                width: 6,
-                height: 6,
-                borderRadius: BorderRadius.circular(7),
-                color: Color(0xFF3897F0),
-              ),
-            ),
-            controller: postsController,
-            count: 8,
           ),
         ),
         Actions(),

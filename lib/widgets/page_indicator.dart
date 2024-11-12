@@ -97,7 +97,7 @@ double _startOffset = 0;
 bool _isTapped = false;
 int _previousPage = 0;
 int _previousCurrentPage = _currentPage;
-double _selfScrollOffset = 0;
+Offset? _clickedOffset;
 double scrollOffset = 0;
 
 class PageIndicator extends StatefulWidget {
@@ -137,23 +137,27 @@ class _PageIndicatorState extends State<PageIndicator> {
               onHorizontalDragUpdate: (details) {
                 setState(() {
                   offset = details.localPosition.dx;
-                  scrollOffset += -offset;
                   bool isLeft = offset < _startOffset;
+                  bool isRight = offset > _startOffset;
                   _startOffset = offset;
+                  final currentPos = widget.controller.position.pixels;
+                  // final scrollOffset =
+                  //     widget.controller.position.viewportDimension *
+                  //         (offset.abs() / 100);
+                  final scrollOffset =
+                      widget.controller.position.viewportDimension *
+                          (65 / (6 * offset.abs()));
+
                   if (isLeft) {
-                    widget.controller.jumpTo(widget.controller.position.pixels +
-                        (widget.controller.position.viewportDimension *
-                            (-offset / 100)));
-                  } else {
-                    widget.controller.jumpTo(widget.controller.position.pixels +
-                        (widget.controller.position.viewportDimension *
-                            (offset / 100)));
+                    if (currentPos - scrollOffset >= 0) {
+                      widget.controller.jumpTo(currentPos - scrollOffset);
+                    }
+                  } else if (isRight) {
+                    if (currentPos + scrollOffset <=
+                        widget.controller.position.maxScrollExtent) {
+                      widget.controller.jumpTo(currentPos + scrollOffset);
+                    }
                   }
-                });
-              },
-              onHorizontalDragDown: (details) {
-                setState(() {
-                  // offset = details.localPosition.dx;
                 });
               },
               onHorizontalDragCancel: () {
@@ -168,6 +172,27 @@ class _PageIndicatorState extends State<PageIndicator> {
               },
               onTapDown: (details) {
                 setState(() {
+                  _clickedOffset = details.localPosition;
+                  for (int i = 1; i <= widget.pages; i++) {
+                    final widthCorrection = 65 / 2 - 3;
+                    final position = Offset(
+                        (10 * (i - 1)) + widthCorrection + scrollOffset - 22.5,
+                        30 / 2);
+                    if (_clickedOffset != null) {
+                      final maxPosDx = position.dx + 4;
+                      final minPosDx = position.dx - 4;
+                      final maxPosDy = position.dy + 4;
+                      final minPosDy = position.dy - 4;
+                      if (_clickedOffset!.dx >= minPosDx &&
+                          _clickedOffset!.dx <= maxPosDx &&
+                          _clickedOffset!.dy >= minPosDy &&
+                          _clickedOffset!.dy <= maxPosDy) {
+                        widget.controller.jumpToPage(i.toInt() - 1);
+                        _currentPage = i.toInt();
+                        _clickedOffset = null;
+                      }
+                    }
+                  }
                   _isTapped = true;
                 });
               },
@@ -190,16 +215,17 @@ class _PageIndicatorState extends State<PageIndicator> {
                 ),
                 child: SizedBox(
                   height: 30,
-                  width: 80,
+                  width: MediaQuery.sizeOf(context).width,
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: 80),
                     child: CustomPaint(
-                      size: const Size(65, 10),
+                      size: const Size(65, 30),
                       painter: PageIndicatorPainter(
-                        maxExtent: widget.controller.position.viewportDimension,
-                        noOfPages: widget.pages,
-                        offset: widget.controller.position.pixels,
-                      ),
+                          maxExtent:
+                              widget.controller.position.viewportDimension,
+                          noOfPages: widget.pages,
+                          offset: widget.controller.position.pixels,
+                          clickedOffset: _clickedOffset),
                     ),
                   ),
                 ),
@@ -214,11 +240,13 @@ class PageIndicatorPainter extends CustomPainter {
   final double offset;
   final double maxExtent;
   final int noOfPages;
+  final Offset? clickedOffset;
 
   PageIndicatorPainter({
     required this.maxExtent,
     required this.noOfPages,
     required this.offset,
+    this.clickedOffset,
   });
 
   @override
@@ -233,6 +261,8 @@ class PageIndicatorPainter extends CustomPainter {
     }
     Offset position = Offset(0, 0);
     for (double i = 1; i <= noOfPages; i++) {
+      position = Offset(
+          (10 * (i - 1)) + widthCorrection + scrollOffset + 9, size.height / 2);
       if (i < noOfPages) {
         if (i > 1) {
           if (offset > ((pageOffset * (i - 2)) + (pageOffset / 2)) &&
@@ -251,7 +281,7 @@ class PageIndicatorPainter extends CustomPainter {
       }
       bool isSelected = _currentPage == i;
       if (scrollOffset < (size.width - (noOfPages * 10)) - 8) {
-        scrollOffset = size.width - (noOfPages * 10) - 7;
+        scrollOffset = size.width - (noOfPages * 10) - 5;
       }
       if (scrollOffset > 0) {
         scrollOffset = 0;
@@ -261,8 +291,6 @@ class PageIndicatorPainter extends CustomPainter {
       } else if (_currentPage == 1) {
         scrollOffset = 0;
       }
-      position = Offset(
-          (10 * (i - 1)) + widthCorrection + scrollOffset + 9, size.height / 2);
       Offset currentPos = Offset(
           (10 * (_currentPage - 1)) + widthCorrection + scrollOffset + 9,
           size.height / 2);
@@ -285,7 +313,6 @@ class PageIndicatorPainter extends CustomPainter {
         }
       } else if (isCurrentAtLeftEdge &&
           !isCurrentFirstOrLast &&
-          // hasOffsetChanged &&
           (_currentPage < _previousPage) &&
           currentPos.dx < widthCorrection + 10) {
         scrollOffset += (size.width - 5) / 6;
@@ -308,15 +335,18 @@ class PageIndicatorPainter extends CustomPainter {
                   : 2.5));
       if (position.dx < size.width + widthCorrection - 5 &&
           position.dx > widthCorrection)
-        canvas.drawCircle(position, radius,
-            paint..color = isSelected ? Colors.red : Colors.grey);
+        canvas.drawCircle(
+            position,
+            radius,
+            paint
+              ..color = isSelected
+                  ? Color.fromRGBO(0, 149, 246, 1)
+                  : Color.fromRGBO(219, 219, 219, 1));
     }
   }
 
   @override
   bool shouldRepaint(covariant PageIndicatorPainter oldDelegate) =>
-      (oldDelegate.offset != offset);
-  // (oldDelegate.scrollOffset != scrollOffset);
-  // ||
-  // (oldDelegate.selfScrollOffset != selfScrollOffset);
+      (oldDelegate.offset != offset) ||
+      (oldDelegate.clickedOffset != clickedOffset);
 }
