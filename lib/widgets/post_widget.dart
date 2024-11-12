@@ -229,10 +229,41 @@ class CarouselPostWidget extends StatelessWidget {
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
-                  child: Text(
-                    "1/3",
-                    style: const TextStyle(color: Colors.white),
-                  ),
+                  child: AnimatedBuilder(
+                      animation: postsController,
+                      builder: (context, child) {
+                        int _currentPage = 1;
+                        double offset = postsController.position.pixels;
+                        final pageOffset =
+                            postsController.position.viewportDimension;
+                        for (int i = 1; i <= 8; i++) {
+                          if (i < 8) {
+                            if (i > 1) {
+                              if (offset >
+                                      ((pageOffset * (i - 2)) +
+                                          (pageOffset / 2)) &&
+                                  offset <
+                                      ((pageOffset * (i)) - (pageOffset / 2))) {
+                                _currentPage = i.toInt();
+                              }
+                            } else {
+                              if (offset <
+                                  ((pageOffset * (i)) - (pageOffset / 2))) {
+                                _currentPage = 1;
+                              }
+                            }
+                          } else {
+                            if (offset >
+                                ((pageOffset * (i - 2)) + (pageOffset / 2))) {
+                              _currentPage = 8;
+                            }
+                          }
+                        }
+                        return Text(
+                          "$_currentPage/8",
+                          style: const TextStyle(color: Colors.white),
+                        );
+                      }),
                 ),
               ),
             ),
