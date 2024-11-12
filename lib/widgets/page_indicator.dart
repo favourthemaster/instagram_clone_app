@@ -123,115 +123,124 @@ class _PageIndicatorState extends State<PageIndicator> {
     return SizedBox(
       height: 30,
       width: 65,
-      child: AnimatedBuilder(
-          animation: widget.controller,
-          builder: (context, child) {
-            // print("yo ${widget.controller.position.maxScrollExtent}");
-            return GestureDetector(
-              onHorizontalDragStart: (details) {
-                setState(() {
-                  _isTapped = true;
-                  _startOffset = details.localPosition.dx;
-                });
-              },
-              onHorizontalDragUpdate: (details) {
-                setState(() {
-                  offset = details.localPosition.dx;
-                  bool isLeft = offset < _startOffset;
-                  bool isRight = offset > _startOffset;
-                  _startOffset = offset;
-                  final currentPos = widget.controller.position.pixels;
-                  // final scrollOffset =
-                  //     widget.controller.position.viewportDimension *
-                  //         (offset.abs() / 100);
-                  final scrollOffset =
-                      widget.controller.position.viewportDimension *
-                          (65 / (6 * offset.abs()));
+      child: Builder(builder: (context) {
+        if (widget.controller.hasClients && widget.controller.page != null) {
+          return AnimatedBuilder(
+              animation: widget.controller,
+              builder: (context, child) {
+                // print("yo ${widget.controller.position.maxScrollExtent}");
+                return GestureDetector(
+                  onHorizontalDragStart: (details) {
+                    setState(() {
+                      _isTapped = true;
+                      _startOffset = details.localPosition.dx;
+                    });
+                  },
+                  onHorizontalDragUpdate: (details) {
+                    setState(() {
+                      offset = details.localPosition.dx;
+                      bool isLeft = offset < _startOffset;
+                      bool isRight = offset > _startOffset;
+                      _startOffset = offset;
+                      final currentPos = widget.controller.position.pixels;
+                      // final scrollOffset =
+                      //     widget.controller.position.viewportDimension *
+                      //         (offset.abs() / 100);
+                      final scrollOffset =
+                          widget.controller.position.viewportDimension *
+                              (65 / (6 * offset.abs()));
 
-                  if (isLeft) {
-                    if (currentPos - scrollOffset >= 0) {
-                      widget.controller.jumpTo(currentPos - scrollOffset);
-                    }
-                  } else if (isRight) {
-                    if (currentPos + scrollOffset <=
-                        widget.controller.position.maxScrollExtent) {
-                      widget.controller.jumpTo(currentPos + scrollOffset);
-                    }
-                  }
-                });
-              },
-              onHorizontalDragCancel: () {
-                setState(() {
-                  _isTapped = false;
-                });
-              },
-              onHorizontalDragEnd: (_) {
-                setState(() {
-                  _isTapped = false;
-                });
-              },
-              onTapDown: (details) {
-                setState(() {
-                  _clickedOffset = details.localPosition;
-                  for (int i = 1; i <= widget.pages; i++) {
-                    final widthCorrection = 65 / 2 - 3;
-                    final position = Offset(
-                        (10 * (i - 1)) + widthCorrection + scrollOffset - 22.5,
-                        30 / 2);
-                    if (_clickedOffset != null) {
-                      final maxPosDx = position.dx + 4;
-                      final minPosDx = position.dx - 4;
-                      final maxPosDy = position.dy + 4;
-                      final minPosDy = position.dy - 4;
-                      if (_clickedOffset!.dx >= minPosDx &&
-                          _clickedOffset!.dx <= maxPosDx &&
-                          _clickedOffset!.dy >= minPosDy &&
-                          _clickedOffset!.dy <= maxPosDy) {
-                        widget.controller.jumpToPage(i.toInt() - 1);
-                        _currentPage = i.toInt();
-                        _clickedOffset = null;
+                      if (isLeft) {
+                        if (currentPos - scrollOffset >= 0) {
+                          widget.controller.jumpTo(currentPos - scrollOffset);
+                        }
+                      } else if (isRight) {
+                        if (currentPos + scrollOffset <=
+                            widget.controller.position.maxScrollExtent) {
+                          widget.controller.jumpTo(currentPos + scrollOffset);
+                        }
                       }
-                    }
-                  }
-                  _isTapped = true;
-                });
-              },
-              onTapUp: (details) {
-                setState(() {
-                  _isTapped = false;
-                });
-              },
-              onTapCancel: () {
-                setState(() {
-                  _isTapped = false;
-                });
-              },
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: _isTapped
-                      ? Colors.grey.withOpacity(.2)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: SizedBox(
-                  height: 30,
-                  width: MediaQuery.sizeOf(context).width,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 80),
-                    child: CustomPaint(
-                      size: const Size(65, 30),
-                      painter: PageIndicatorPainter(
-                          maxExtent:
-                              widget.controller.position.viewportDimension,
-                          noOfPages: widget.pages,
-                          offset: widget.controller.position.pixels,
-                          clickedOffset: _clickedOffset),
+                    });
+                  },
+                  onHorizontalDragCancel: () {
+                    setState(() {
+                      _isTapped = false;
+                    });
+                  },
+                  onHorizontalDragEnd: (_) {
+                    setState(() {
+                      _isTapped = false;
+                    });
+                  },
+                  onTapDown: (details) {
+                    setState(() {
+                      _clickedOffset = details.localPosition;
+                      for (int i = 1; i <= widget.pages; i++) {
+                        final widthCorrection = 65 / 2 - 3;
+                        final position = Offset(
+                            (10 * (i - 1)) +
+                                widthCorrection +
+                                scrollOffset -
+                                22.5,
+                            30 / 2);
+                        if (_clickedOffset != null) {
+                          final maxPosDx = position.dx + 4;
+                          final minPosDx = position.dx - 4;
+                          final maxPosDy = position.dy + 4;
+                          final minPosDy = position.dy - 4;
+                          if (_clickedOffset!.dx >= minPosDx &&
+                              _clickedOffset!.dx <= maxPosDx &&
+                              _clickedOffset!.dy >= minPosDy &&
+                              _clickedOffset!.dy <= maxPosDy) {
+                            widget.controller.jumpToPage(i.toInt() - 1);
+                            _currentPage = i.toInt();
+                            _clickedOffset = null;
+                          }
+                        }
+                      }
+                      _isTapped = true;
+                    });
+                  },
+                  onTapUp: (details) {
+                    setState(() {
+                      _isTapped = false;
+                    });
+                  },
+                  onTapCancel: () {
+                    setState(() {
+                      _isTapped = false;
+                    });
+                  },
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: _isTapped
+                          ? Colors.grey.withOpacity(.2)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: SizedBox(
+                      height: 30,
+                      width: MediaQuery.sizeOf(context).width,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 80),
+                        child: CustomPaint(
+                          size: const Size(65, 30),
+                          painter: PageIndicatorPainter(
+                              maxExtent:
+                                  widget.controller.position.viewportDimension,
+                              noOfPages: widget.pages,
+                              offset: widget.controller.position.pixels,
+                              clickedOffset: _clickedOffset),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            );
-          }),
+                );
+              });
+        } else {
+          return SizedBox();
+        }
+      }),
     );
   }
 }

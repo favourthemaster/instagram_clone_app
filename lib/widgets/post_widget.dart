@@ -220,52 +220,62 @@ class CarouselPostWidget extends StatelessWidget {
             Positioned(
               top: 20,
               right: 20,
-              child: DecoratedBox(
-                decoration: const BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.horizontal(
-                      right: Radius.circular(20), left: Radius.circular(20)),
-                ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
-                  child: AnimatedBuilder(
-                      animation: postsController,
-                      builder: (context, child) {
-                        int _currentPage = 1;
-                        double offset = postsController.position.pixels;
-                        final pageOffset =
-                            postsController.position.viewportDimension;
-                        for (int i = 1; i <= 8; i++) {
-                          if (i < 8) {
-                            if (i > 1) {
-                              if (offset >
-                                      ((pageOffset * (i - 2)) +
-                                          (pageOffset / 2)) &&
-                                  offset <
+              child: Builder(builder: (context) {
+                if (postsController.hasClients &&
+                    postsController.page != null) {
+                  return DecoratedBox(
+                    decoration: const BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.horizontal(
+                          right: Radius.circular(20),
+                          left: Radius.circular(20)),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0, vertical: 4),
+                      child: AnimatedBuilder(
+                          animation: postsController,
+                          builder: (context, child) {
+                            int _currentPage = 1;
+                            double offset = postsController.position.pixels;
+                            final pageOffset =
+                                postsController.position.viewportDimension;
+                            for (int i = 1; i <= 8; i++) {
+                              if (i < 8) {
+                                if (i > 1) {
+                                  if (offset >
+                                          ((pageOffset * (i - 2)) +
+                                              (pageOffset / 2)) &&
+                                      offset <
+                                          ((pageOffset * (i)) -
+                                              (pageOffset / 2))) {
+                                    _currentPage = i.toInt();
+                                  }
+                                } else {
+                                  if (offset <
                                       ((pageOffset * (i)) - (pageOffset / 2))) {
-                                _currentPage = i.toInt();
-                              }
-                            } else {
-                              if (offset <
-                                  ((pageOffset * (i)) - (pageOffset / 2))) {
-                                _currentPage = 1;
+                                    _currentPage = 1;
+                                  }
+                                }
+                              } else {
+                                if (offset >
+                                    ((pageOffset * (i - 2)) +
+                                        (pageOffset / 2))) {
+                                  _currentPage = 8;
+                                }
                               }
                             }
-                          } else {
-                            if (offset >
-                                ((pageOffset * (i - 2)) + (pageOffset / 2))) {
-                              _currentPage = 8;
-                            }
-                          }
-                        }
-                        return Text(
-                          "$_currentPage/8",
-                          style: const TextStyle(color: Colors.white),
-                        );
-                      }),
-                ),
-              ),
+                            return Text(
+                              "$_currentPage/8",
+                              style: const TextStyle(color: Colors.white),
+                            );
+                          }),
+                    ),
+                  );
+                } else {
+                  return SizedBox();
+                }
+              }),
             ),
           ],
         ),
@@ -452,27 +462,6 @@ class DescriptionWidget extends StatelessWidget {
                 "Tap on Show more to expand and Show less to collapse",
             style: TextStyle(color: Colors.black),
           ),
-          // RichText(
-          //     //softWrap: true,
-          //     maxLines: 2,
-          //     overflow: TextOverflow.ellipsis,
-          //     text: TextSpan(children: [
-          //       TextSpan(
-          //         text: "Username ",
-          //         style: TextStyle(
-          //           fontWeight: FontWeight.bold,
-          //           color: Colors.black,
-          //         ),
-          //       ),
-          //       TextSpan(
-          //         text: "ODOUDBOUDBOBUOUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"
-          //             "DOBUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUDOUOOU"
-          //             "DOUDBOUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU",
-          //         style: TextStyle(
-          //           color: Colors.black,
-          //         ),
-          //       ),
-          //     ])),
           Text("View all Comments"),
           Text("15 hours ago"),
         ],
